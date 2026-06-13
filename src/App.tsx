@@ -22,8 +22,7 @@ import {
   Sun,
   Moon,
   ChevronLeft,
-  ChevronRight,
-  Menu
+  ChevronRight
 } from 'lucide-react';
 import './App.css';
 
@@ -67,8 +66,6 @@ function App() {
 
   // 2. Compute customized recommendations list to extract carbon savings
   const customizedRecommendations = useMemo(() => {
-    // We pass SHAP values for match scores, but we only need it for computing adopted savings
-    const shapResults = calculateSHAP(telemetryToVector(telemetry), telemetryToVector(getAverageTelemetry()));
     const recs = adoptedIds.map(id => {
       // Find base savings
       const list = recsList(telemetry);
