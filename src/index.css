@@ -1,0 +1,14 @@
+/* Reset default styles to allow full dashboard scaling */
+#root {
+  width: 100% !important;
+  max-width: 100% !important;
+  margin: 0 !important;
+  border-inline: none !important;
+  text-align: left !important;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #07090e;
+}
