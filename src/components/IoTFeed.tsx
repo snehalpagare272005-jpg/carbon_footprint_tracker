@@ -99,7 +99,51 @@ export const IoTFeed: React.FC<IoTFeedProps> = ({ telemetry, onChange }) => {
     };
   }, [liveStreamEnabled, telemetry, onChange]);
 
+  const [activePreset, setActivePreset] = useState<'eco' | 'average' | 'heavy' | 'custom'>('custom');
+
+  const presets = {
+    eco: {
+      electricity_kwh: 5.5,
+      appliance_ac_kwh: 1.5,
+      appliance_other_kwh: 2.0,
+      transport_dist_km: 10,
+      transport_fuel_type: 'ev' as const,
+      diet_meat_servings: 0.1,
+      diet_dairy_servings: 0.3,
+      water_liters: 70,
+      waste_kg: 0.4
+    },
+    average: {
+      electricity_kwh: 15.0,
+      appliance_ac_kwh: 6.0,
+      appliance_other_kwh: 5.0,
+      transport_dist_km: 30,
+      transport_fuel_type: 'hybrid' as const,
+      diet_meat_servings: 1.0,
+      diet_dairy_servings: 1.2,
+      water_liters: 150,
+      waste_kg: 1.1
+    },
+    heavy: {
+      electricity_kwh: 32.0,
+      appliance_ac_kwh: 16.0,
+      appliance_other_kwh: 12.0,
+      transport_dist_km: 80,
+      transport_fuel_type: 'petrol' as const,
+      diet_meat_servings: 3.5,
+      diet_dairy_servings: 2.5,
+      water_liters: 350,
+      waste_kg: 2.8
+    }
+  };
+
+  const handleApplyPreset = (presetKey: 'eco' | 'average' | 'heavy') => {
+    setActivePreset(presetKey);
+    onChange(presets[presetKey]);
+  };
+
   const handleSliderChange = (key: keyof IoTTelemetry, value: number) => {
+    setActivePreset('custom');
     const newTelemetry = { ...telemetry, [key]: value };
     
     // If tweaking AC/appliances directly, check they are consistent with general electricity
@@ -111,6 +155,7 @@ export const IoTFeed: React.FC<IoTFeedProps> = ({ telemetry, onChange }) => {
   };
 
   const handleFuelChange = (type: IoTTelemetry['transport_fuel_type']) => {
+    setActivePreset('custom');
     onChange({ ...telemetry, transport_fuel_type: type });
   };
 
@@ -130,6 +175,36 @@ export const IoTFeed: React.FC<IoTFeedProps> = ({ telemetry, onChange }) => {
             <Radio className={`icon-sm ${liveStreamEnabled ? 'pulse-anim' : ''}`} />
             {liveStreamEnabled ? 'LIVE SIMULATOR ACTIVE' : 'ENABLE LIVE STREAM'}
           </button>
+        </div>
+
+        {/* Preset Selectors */}
+        <div className="presets-container" style={{ padding: '0 24px' }}>
+          <button
+            type="button"
+            className={`btn-preset ${activePreset === 'eco' ? 'active' : ''}`}
+            onClick={() => handleApplyPreset('eco')}
+          >
+            🌱 Eco-Conscious User
+          </button>
+          <button
+            type="button"
+            className={`btn-preset ${activePreset === 'average' ? 'active' : ''}`}
+            onClick={() => handleApplyPreset('average')}
+          >
+            🏠 Average Citizen
+          </button>
+          <button
+            type="button"
+            className={`btn-preset ${activePreset === 'heavy' ? 'active' : ''}`}
+            onClick={() => handleApplyPreset('heavy')}
+          >
+            ⚡ High Footprint Profile
+          </button>
+          {activePreset === 'custom' && (
+            <button type="button" className="btn-preset active" disabled>
+              ⚙️ Custom Tweaks
+            </button>
+          )}
         </div>
 
         <div className="sliders-grid">

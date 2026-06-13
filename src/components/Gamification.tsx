@@ -101,11 +101,11 @@ export const Gamification: React.FC<GamificationProps> = ({ currentPrediction, a
     return 'text-red border-red';
   };
 
-  const getScoreStrokeColor = (score: number) => {
-    if (score >= 80) return '#10B981'; // Green
-    if (score >= 50) return '#06B6D4'; // Cyan
-    if (score >= 30) return '#F59E0B'; // Amber
-    return '#EF4444'; // Red
+  const getScoreGradient = (score: number) => {
+    if (score >= 80) return 'url(#gauge-green)';
+    if (score >= 50) return 'url(#gauge-cyan)';
+    if (score >= 30) return 'url(#gauge-amber)';
+    return 'url(#gauge-red)';
   };
 
   return (
@@ -121,13 +121,35 @@ export const Gamification: React.FC<GamificationProps> = ({ currentPrediction, a
         <div className="card-body gauge-body">
           <div className="gauge-container">
             <svg width="150" height="150" className="gauge-svg">
+              <defs>
+                <linearGradient id="gauge-green" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#34d399" />
+                  <stop offset="100%" stopColor="#059669" />
+                </linearGradient>
+                <linearGradient id="gauge-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#22d3ee" />
+                  <stop offset="100%" stopColor="#0891b2" />
+                </linearGradient>
+                <linearGradient id="gauge-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#fbbf24" />
+                  <stop offset="100%" stopColor="#d97706" />
+                </linearGradient>
+                <linearGradient id="gauge-red" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="#f87171" />
+                  <stop offset="100%" stopColor="#dc2626" />
+                </linearGradient>
+                <filter id="gauge-glow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feGaussianBlur stdDeviation="3" result="blur" />
+                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                </filter>
+              </defs>
               {/* Background circle */}
               <circle
                 cx="75"
                 cy="75"
                 r={radius}
                 fill="transparent"
-                stroke="rgba(255, 255, 255, 0.05)"
+                stroke="var(--border-color)"
                 strokeWidth={strokeWidth}
               />
               {/* Foregound animated circle */}
@@ -136,12 +158,13 @@ export const Gamification: React.FC<GamificationProps> = ({ currentPrediction, a
                 cy="75"
                 r={radius}
                 fill="transparent"
-                stroke={getScoreStrokeColor(greenScore)}
+                stroke={getScoreGradient(greenScore)}
                 strokeWidth={strokeWidth}
                 strokeDasharray={circumference}
                 strokeDashoffset={offset}
                 strokeLinecap="round"
                 className="gauge-circle"
+                filter="url(#gauge-glow)"
               />
             </svg>
             <div className="gauge-overlay">

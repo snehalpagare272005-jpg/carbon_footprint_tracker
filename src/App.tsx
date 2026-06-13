@@ -18,7 +18,12 @@ import {
   Network, 
   Award,
   Globe,
-  Radio
+  Radio,
+  Sun,
+  Moon,
+  ChevronLeft,
+  ChevronRight,
+  Menu
 } from 'lucide-react';
 import './App.css';
 
@@ -27,6 +32,8 @@ function App() {
   const [telemetry, setTelemetry] = useState<IoTTelemetry>(getAverageTelemetry());
   const [adoptedIds, setAdoptedIds] = useState<string[]>([]);
   const [currentWeights, setCurrentWeights] = useState<number[]>([0.9, 0.8, 0.9, 0.5, 1.8, 4.0, 1.5, 0.002, 1.8]);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark');
 
   // Handle telemetry update from sliders
   const handleTelemetryChange = (newTelemetry: IoTTelemetry) => {
@@ -114,148 +121,185 @@ function App() {
   const greenScore = Math.max(0, Math.min(100, Math.round(100 - (adjustedPrediction - 5) * 4.0)));
 
   return (
-    <div className="app-wrapper">
-      {/* Header Banner */}
-      <header className="app-header">
-        <div className="header-left">
+    <div className={`app-shell ${theme}-theme ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
+      {/* Sidebar Navigation */}
+      <aside className="app-sidebar">
+        <div className="sidebar-header">
           <div className="logo-badge">
             <Globe className="logo-icon pulse-anim" />
           </div>
-          <div className="brand-info">
-            <h1>EcoTrackAI+</h1>
-            <span className="subtitle">Explainable AI & Federated Carbon Optimization Platform</span>
+          {!sidebarCollapsed && <span className="sidebar-brand-name">EcoTrackAI+</span>}
+          <button 
+            className="btn-toggle-sidebar" 
+            onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+            title={sidebarCollapsed ? "Expand Sidebar" : "Collapse Sidebar"}
+          >
+            {sidebarCollapsed ? <ChevronRight className="icon-sm" /> : <ChevronLeft className="icon-sm" />}
+          </button>
+        </div>
+
+        <nav className="sidebar-nav">
+          <button 
+            className={`sidebar-nav-item ${activeTab === 'iot' ? 'active' : ''}`}
+            onClick={() => setActiveTab('iot')}
+          >
+            <Cpu className="icon-sm" /> 
+            {!sidebarCollapsed && <span>IoT Telemetry</span>}
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === 'xai' ? 'active' : ''}`}
+            onClick={() => setActiveTab('xai')}
+          >
+            <Activity className="icon-sm" /> 
+            {!sidebarCollapsed && <span>Explainable AI</span>}
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === 'forecast' ? 'active' : ''}`}
+            onClick={() => setActiveTab('forecast')}
+          >
+            <Calendar className="icon-sm" /> 
+            {!sidebarCollapsed && <span>Time Forecast</span>}
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === 'recommendations' ? 'active' : ''}`}
+            onClick={() => setActiveTab('recommendations')}
+          >
+            <Leaf className="icon-sm" /> 
+            {!sidebarCollapsed && <span>Recommendations</span>}
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === 'federated' ? 'active' : ''}`}
+            onClick={() => setActiveTab('federated')}
+          >
+            <Network className="icon-sm" /> 
+            {!sidebarCollapsed && <span>Federated Learn</span>}
+          </button>
+
+          <button 
+            className={`sidebar-nav-item ${activeTab === 'gamification' ? 'active' : ''}`}
+            onClick={() => setActiveTab('gamification')}
+          >
+            <Award className="icon-sm" /> 
+            {!sidebarCollapsed && <span>Green Badges</span>}
+          </button>
+        </nav>
+      </aside>
+
+      {/* Main Content Wrapper */}
+      <div className="main-container">
+        {/* Header Banner */}
+        <header className="app-header">
+          <div className="header-left">
+            <div className="brand-info">
+              <h1>{activeTab === 'iot' && 'IoT Telemetry Node'}
+                  {activeTab === 'xai' && 'Explainable AI Explanations'}
+                  {activeTab === 'forecast' && 'AI Forecasting Engine'}
+                  {activeTab === 'recommendations' && 'Mitigation Optimizer'}
+                  {activeTab === 'federated' && 'Federated Node Console'}
+                  {activeTab === 'gamification' && 'Achievements & Badges'}</h1>
+              <span className="subtitle">Explainable AI & Federated Carbon Optimization Platform</span>
+            </div>
           </div>
-        </div>
-        <div className="header-right">
-          <div className="status-pill active">
-            <Radio className="icon-sm pulse-anim text-green" />
-            <span>Node #05 (Active)</span>
+          
+          <div className="header-right">
+            {/* Theme Switcher Toggle */}
+            <button 
+              className="theme-toggle-btn"
+              onClick={() => setTheme(prev => prev === 'dark' ? 'light' : 'dark')}
+              title={theme === 'dark' ? "Switch to Light Mode" : "Switch to Dark Mode"}
+            >
+              {theme === 'dark' ? <Sun className="icon-sm" /> : <Moon className="icon-sm" />}
+            </button>
+
+            <div className="status-pill active">
+              <Radio className="icon-sm pulse-anim text-green" />
+              <span>Node #05 (Active)</span>
+            </div>
+            <div className="status-pill synced">
+              <span>Server Synced</span>
+            </div>
           </div>
-          <div className="status-pill synced">
-            <span>Server Synced</span>
+        </header>
+
+        {/* KPI Overview Cards */}
+        <section className="kpi-panel">
+          <div className="glass-card kpi-card border-purple">
+            <span className="kpi-title">Daily Predicted Footprint</span>
+            <span className="kpi-value text-purple">{adjustedPrediction.toFixed(2)} kg CO₂/d</span>
+            <span className="kpi-subtitle">
+              {adjustedPrediction <= 14.85 ? (
+                <span className="text-green">↓ {( (1 - adjustedPrediction / 14.85) * 100 ).toFixed(0)}% below avg</span>
+              ) : (
+                <span className="text-red">↑ {( (adjustedPrediction / 14.85 - 1) * 100 ).toFixed(0)}% above avg</span>
+              )}
+            </span>
           </div>
-        </div>
-      </header>
 
-      {/* KPI Overview Cards */}
-      <section className="kpi-panel">
-        <div className="glass-card kpi-card border-purple">
-          <span className="kpi-title">Daily Predicted Footprint</span>
-          <span className="kpi-value text-purple">{adjustedPrediction.toFixed(2)} kg CO₂/d</span>
-          <span className="kpi-subtitle">
-            {adjustedPrediction <= 14.85 ? (
-              <span className="text-green">↓ {( (1 - adjustedPrediction / 14.85) * 100 ).toFixed(0)}% below avg</span>
-            ) : (
-              <span className="text-red">↑ {( (adjustedPrediction / 14.85 - 1) * 100 ).toFixed(0)}% above avg</span>
-            )}
-          </span>
-        </div>
+          <div className="glass-card kpi-card border-green">
+            <span className="kpi-title">Green Score</span>
+            <span className={`kpi-value ${greenScore >= 80 ? 'text-green' : greenScore >= 50 ? 'text-cyan' : 'text-amber'}`}>
+              {greenScore} / 100
+            </span>
+            <span className="kpi-subtitle">Environmental Health Index</span>
+          </div>
 
-        <div className="glass-card kpi-card border-green">
-          <span className="kpi-title">Green Score</span>
-          <span className={`kpi-value ${greenScore >= 80 ? 'text-green' : greenScore >= 50 ? 'text-cyan' : 'text-amber'}`}>
-            {greenScore} / 100
-          </span>
-          <span className="kpi-subtitle">Environmental Health Index</span>
-        </div>
+          <div className="glass-card kpi-card border-cyan">
+            <span className="kpi-title">Adopted Mitigation Offsets</span>
+            <span className="kpi-value text-cyan">-{customizedRecommendations.toFixed(0)} kg CO₂/mo</span>
+            <span className="kpi-subtitle">{adoptedIds.length} decarbonization actions active</span>
+          </div>
 
-        <div className="glass-card kpi-card border-cyan">
-          <span className="kpi-title">Adopted Mitigation Offsets</span>
-          <span className="kpi-value text-cyan">-{customizedRecommendations.toFixed(0)} kg CO₂/mo</span>
-          <span className="kpi-subtitle">{adoptedIds.length} decarbonization actions active</span>
-        </div>
+          <div className="glass-card kpi-card border-amber">
+            <span className="kpi-title">IoT Telemetry Feeds</span>
+            <span className="kpi-value text-amber">5 / 5 Linked</span>
+            <span className="kpi-subtitle">Smart meters transmitting</span>
+          </div>
+        </section>
 
-        <div className="glass-card kpi-card border-amber">
-          <span className="kpi-title">IoT Telemetry Feeds</span>
-          <span className="kpi-value text-amber">5 / 5 Linked</span>
-          <span className="kpi-subtitle">Smart meters transmitting</span>
-        </div>
-      </section>
+        {/* Primary Dashboard Container */}
+        <main className="dashboard-content">
+          {activeTab === 'iot' && (
+            <IoTFeed telemetry={telemetry} onChange={handleTelemetryChange} />
+          )}
+          {activeTab === 'xai' && (
+            <XAICharts shapData={shapData} limeData={limeData} currentPrediction={adjustedPrediction} />
+          )}
+          {activeTab === 'forecast' && (
+            <ForecastingChart currentPrediction={adjustedPrediction} />
+          )}
+          {activeTab === 'recommendations' && (
+            <RecommendationEngine 
+              telemetry={telemetry} 
+              shapValues={shapData.shapValues} 
+              adoptedIds={adoptedIds}
+              onAdoptToggle={handleAdoptToggle} 
+              onBulkAdopt={handleBulkAdopt}
+            />
+          )}
+          {activeTab === 'federated' && (
+            <FederatedGraph 
+              userTelemetry={telemetry} 
+              onWeightsUpdated={setCurrentWeights} 
+            />
+          )}
+          {activeTab === 'gamification' && (
+            <Gamification 
+              currentPrediction={adjustedPrediction} 
+              adoptedIds={adoptedIds}
+              telemetry={telemetry}
+            />
+          )}
+        </main>
 
-      {/* Main Tab Navigation */}
-      <nav className="tab-navigation">
-        <button 
-          className={`btn-nav-tab ${activeTab === 'iot' ? 'active' : ''}`}
-          onClick={() => setActiveTab('iot')}
-        >
-          <Cpu className="icon-sm" /> IoT Telemetry Stream
-        </button>
-
-        <button 
-          className={`btn-nav-tab ${activeTab === 'xai' ? 'active' : ''}`}
-          onClick={() => setActiveTab('xai')}
-        >
-          <Activity className="icon-sm" /> Explainable AI (XAI)
-        </button>
-
-        <button 
-          className={`btn-nav-tab ${activeTab === 'forecast' ? 'active' : ''}`}
-          onClick={() => setActiveTab('forecast')}
-        >
-          <Calendar className="icon-sm" /> Time-Series Forecast
-        </button>
-
-        <button 
-          className={`btn-nav-tab ${activeTab === 'recommendations' ? 'active' : ''}`}
-          onClick={() => setActiveTab('recommendations')}
-        >
-          <Leaf className="icon-sm" /> Mitigation Recommendations
-        </button>
-
-        <button 
-          className={`btn-nav-tab ${activeTab === 'federated' ? 'active' : ''}`}
-          onClick={() => setActiveTab('federated')}
-        >
-          <Network className="icon-sm" /> Federated Learning
-        </button>
-
-        <button 
-          className={`btn-nav-tab ${activeTab === 'gamification' ? 'active' : ''}`}
-          onClick={() => setActiveTab('gamification')}
-        >
-          <Award className="icon-sm" /> Green Score & Badges
-        </button>
-      </nav>
-
-      {/* Primary Dashboard Container */}
-      <main className="dashboard-content">
-        {activeTab === 'iot' && (
-          <IoTFeed telemetry={telemetry} onChange={handleTelemetryChange} />
-        )}
-        {activeTab === 'xai' && (
-          <XAICharts shapData={shapData} limeData={limeData} currentPrediction={adjustedPrediction} />
-        )}
-        {activeTab === 'forecast' && (
-          <ForecastingChart currentPrediction={adjustedPrediction} />
-        )}
-        {activeTab === 'recommendations' && (
-          <RecommendationEngine 
-            telemetry={telemetry} 
-            shapValues={shapData.shapValues} 
-            adoptedIds={adoptedIds}
-            onAdoptToggle={handleAdoptToggle} 
-            onBulkAdopt={handleBulkAdopt}
-          />
-        )}
-        {activeTab === 'federated' && (
-          <FederatedGraph 
-            userTelemetry={telemetry} 
-            onWeightsUpdated={setCurrentWeights} 
-          />
-        )}
-        {activeTab === 'gamification' && (
-          <Gamification 
-            currentPrediction={adjustedPrediction} 
-            adoptedIds={adoptedIds}
-            telemetry={telemetry}
-          />
-        )}
-      </main>
-
-      {/* Footer credits */}
-      <footer className="app-footer">
-        <p>© 2026 EcoTrackAI+ Research Consortium. All Data is homomorphically aggregated locally on client nodes.</p>
-      </footer>
+        {/* Footer credits */}
+        <footer className="app-footer">
+          <p>© 2026 EcoTrackAI+ Research Consortium. All Data is homomorphically aggregated locally on client nodes.</p>
+        </footer>
+      </div>
     </div>
   );
 }

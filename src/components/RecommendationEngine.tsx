@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import type { Recommendation, IoTTelemetry } from '../types';
 import { getCustomizedRecommendations, optimizeReduction } from '../utils/optimizer';
-import { Leaf, Award, Sliders, Check, Sparkles, Gauge } from 'lucide-react';
+import { Leaf, Award, Sliders, Check, Sparkles, Gauge, Search } from 'lucide-react';
 
 interface RecommendationEngineProps {
   telemetry: IoTTelemetry;
@@ -21,6 +21,8 @@ export const RecommendationEngine: React.FC<RecommendationEngineProps> = ({
   const [recommendations, setRecommendations] = useState<Recommendation[]>([]);
   const [targetReduction, setTargetReduction] = useState<number>(150); // kg/month
   const [optimizationResult, setOptimizationResult] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   // Generate recommendations dynamically based on telemetry and SHAP
   useEffect(() => {
@@ -225,9 +227,128 @@ export const RecommendationEngine: React.FC<RecommendationEngineProps> = ({
           </div>
         )}
 
-        {renderRow('Top Picks for Your Profile', topMatches)}
-        {renderRow('High Impact Decarbonizers', highImpact)}
-        {renderRow('Low Effort - High Output', lowHanging)}
+        {/* Category Filters and Search Bar */}
+        <div className="filters-bar" style={{ padding: '0 4px' }}>
+          <div className="search-input-wrap">
+            <Search className="search-icon icon-sm" />
+            <input 
+              type="text" 
+              className="search-input" 
+              placeholder="Search recommendations..." 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
+
+          <div className="filter-pills">
+            <button 
+              className={`btn-filter-pill ${selectedCategory === 'all' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('all')}
+            >
+              All Categories
+            </button>
+            <button 
+              className={`btn-filter-pill ${selectedCategory === 'energy' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('energy')}
+            >
+              ⚡ Energy
+            </button>
+            <button 
+              className={`btn-filter-pill ${selectedCategory === 'transport' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('transport')}
+            >
+              🚗 Transport
+            </button>
+            <button 
+              className={`btn-filter-pill ${selectedCategory === 'food' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('food')}
+            >
+              🥩 Food
+            </button>
+            <button 
+              className={`btn-filter-pill ${selectedCategory === 'water' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('water')}
+            >
+              💧 Water
+            </button>
+            <button 
+              className={`btn-filter-pill ${selectedCategory === 'waste' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('waste')}
+            >
+              🗑️ Waste
+            </button>
+          </div>
+        </div>
+
+        {searchQuery.trim() !== '' || selectedCategory !== 'all' ? (
+          <div className="netflix-row">
+            <h3 className="row-title">Filtered Mitigation Actions</h3>
+            {recommendations.filter(r => {
+              const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory;
+              const matchesSearch = searchQuery.trim() === '' || 
+                r.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                r.description.toLowerCase().includes(searchQuery.toLowerCase());
+              return matchesCategory && matchesSearch && !r.adopted;
+            }).length === 0 ? (
+              <p className="no-data">No matching decarbonization actions found.</p>
+            ) : (
+              <div className="netflix-slider" style={{ flexWrap: 'wrap', overflowX: 'unset' }}>
+                {recommendations.filter(r => {
+                  const matchesCategory = selectedCategory === 'all' || r.category === selectedCategory;
+                  const matchesSearch = searchQuery.trim() === '' || 
+                    r.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    r.description.toLowerCase().includes(searchQuery.toLowerCase());
+                  return matchesCategory && matchesSearch && !r.adopted;
+                }).map(item => (
+                  <div key={item.id} className="recommendation-card glass-card hover-lift" style={{ margin: '8px 0' }}>
+                    <div className="card-top">
+                      <span className="match-badge">{item.matchScore}% Match</span>
+                      <span className="cat-icon">{getCategoryIcon(item.category)}</span>
+                    </div>
+                    
+                    <h4 className="rec-title">{item.title}</h4>
+                    <p className="rec-desc">{item.description}</p>
+                    
+                    <div className="rec-insights">
+                      <span className="insight-pill savings">- {item.co2Savings} kg CO₂/mo</span>
+                      <span className="insight-pill cost">
+                        {item.cost === 0 ? 'Free' : item.cost < 0 ? `Save $${Math.abs(item.cost)}/mo` : `$${item.cost} Cost`}
+                      </span>
+                    </div>
+
+                    <div className="rec-tags">
+                      <span className={`tag effort ${item.effort}`}>Effort: {item.effort.toUpperCase()}</span>
+                      <span className={`tag impact ${item.impact}`}>Impact: {item.impact.toUpperCase()}</span>
+                    </div>
+
+                    <div className="why-rec-text">
+                      <strong>Why:</strong> {item.whyRecommended}
+                    </div>
+
+                    <button 
+                      className={`btn-adopt ${item.adopted ? 'adopted' : ''}`}
+                      onClick={() => onAdoptToggle(item.id)}
+                    >
+                      {item.adopted ? (
+                        <>
+                          <Check className="icon-sm" /> ADOPTED
+                        </>
+                      ) : (
+                        'ADOPT ACTION'
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        ) : (
+          <>
+            {renderRow('Top Picks for Your Profile', topMatches)}
+            {renderRow('High Impact Decarbonizers', highImpact)}
+            {renderRow('Low Effort - High Output', lowHanging)}
+          </>
+        )}
       </div>
     </div>
   );
