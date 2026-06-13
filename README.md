@@ -135,24 +135,6 @@ src/
 └── types.ts                 # Shared TypeScript interfaces
 ```
 
----
-
-## 🎨 UI Highlights
-
-- **Dark Aurora** theme with neon glassmorphism panels
-- **Light Frosted** theme for accessibility
-- Collapsible sidebar navigation
-- Animated SVG charts and network graphs
-- Micro-animations on hover, sliders, and gauge transitions
-- Fully responsive layout (desktop + mobile)
-
----
-
-## 📄 License
-
-MIT License — feel free to use, modify, and distribute.
-
----
 
 <div align="center">
 Made with 💚 for a greener planet · <a href="https://agent-6a2cf9ab88b83f5e890--regal-cuchufli-dbabf8.netlify.app/">Live Demo</a>
