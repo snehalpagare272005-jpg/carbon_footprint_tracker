@@ -104,7 +104,7 @@ export function telemetryToVector(telemetry: IoTTelemetry): number[] {
 /**
  * Converts features vector back to telemetry object.
  */
-export function vectorToTelemetry(vector: number[], original: IoTTelemetry): IoTTelemetry {
+export function vectorToTelemetry(vector: number[], _original: IoTTelemetry): IoTTelemetry {
   // Find fuel type closest to numerical multiplier
   let fuelType: IoTTelemetry['transport_fuel_type'] = 'petrol';
   const val = vector[4];
